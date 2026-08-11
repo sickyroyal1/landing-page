@@ -1,6 +1,6 @@
 {
-  "name": "FD Academy Pickleball Coaching",
-  "description": "Landing page for FD Academy pickleball players to view Coach Francis availability, book private sessions, and manage coaching schedules.",
+  "name": "PB Coach Pickleball Coaching",
+  "description": "Landing page for PB Coach pickleball players to view coach availability, book private sessions, and manage coaching schedules.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

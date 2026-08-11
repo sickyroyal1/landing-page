@@ -12,6 +12,9 @@ export default defineConfig(() => {
       },
     },
     server: {
+      // Allow any Cloudflare quick-tunnel host so the public URL isn't blocked
+      // by Vite's DNS-rebinding protection. A leading "." matches subdomains.
+      allowedHosts: ['.trycloudflare.com'],
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

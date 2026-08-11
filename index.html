@@ -3,11 +3,110 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+
+    <!-- ⚠️  Replace pbcoach.ph with your real domain before going live.
+         Files referencing the placeholder: index.html (canonical, OG/Twitter image URLs, JSON-LD url),
+         public/robots.txt, public/sitemap.xml. -->
+    <link rel="canonical" href="https://pbcoach.ph/" />
+
+    <!-- Primary SEO -->
+    <title>PB Coach | Pickleball Coaching in Negros Oriental, Philippines</title>
+    <meta
+      name="description"
+      content="Book private pickleball coaching in Negros Oriental, Philippines. Pick a pickleball coach, choose a live time slot, and pay per session — elevate your game today."
+    />
+    <meta name="theme-color" content="#8b5cf6" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pbcoach.ph/" />
+    <meta property="og:site_name" content="PB Coach Pickleball" />
+    <meta property="og:title" content="PB Coach | Pickleball Coaching in Negros Oriental, Philippines" />
+    <meta
+      property="og:description"
+      content="Book private pickleball coaching in Negros Oriental, Philippines. Pick a coach, choose a live time slot, and pay per session — elevate your game today."
+    />
+    <meta property="og:image" content="https://pbcoach.ph/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="PB Coach Pickleball — private coaching in Negros Oriental, Philippines" />
+    <meta property="og:locale" content="en_PH" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PB Coach | Pickleball Coaching in Negros Oriental, Philippines" />
+    <meta
+      name="twitter:description"
+      content="Book private pickleball coaching in Negros Oriental, Philippines. Pick a coach, choose a live time slot, and pay per session — elevate your game today."
+    />
+    <meta name="twitter:image" content="https://pbcoach.ph/og-image.jpg" />
+
+    <!-- Structured Data: LocalBusiness -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "@id": "https://pbcoach.ph/#business",
+        "name": "PB Coach Pickleball",
+        "description": "Private pickleball coaching in Negros Oriental, Philippines. Pick a coach, choose a live time slot, and pay per session.",
+        "url": "https://pbcoach.ph/",
+        "image": "https://pbcoach.ph/og-image.jpg",
+        "logo": "https://pbcoach.ph/favicon.svg",
+        "telephone": "+639178392041",
+        "priceRange": "₱200 - ₱550",
+        "founder": {
+          "@type": "Person",
+          "name": "Francis"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Dumaguete City",
+          "addressRegion": "Negros Oriental",
+          "addressCountry": "PH"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 9.3077,
+          "longitude": 123.3064
+        },
+        "areaServed": [
+          "Dumaguete City",
+          "Sibulan",
+          "San Jose",
+          "Valencia",
+          "Bacong",
+          "Dauin",
+          "Zamboanguita",
+          "Bais City",
+          "Tanjay City",
+          "Bayawan City",
+          "Negros Oriental",
+          "Philippines"
+        ],
+        "openingHours": "Mo-Sa 08:00-16:00",
+        "sameAs": ["https://www.instagram.com/pbcoach_pickleball"],
+        "makesOffer": [
+          {
+            "@type": "Offer",
+            "name": "Private Pickleball Coaching Session",
+            "priceCurrency": "PHP",
+            "price": "200"
+          },
+          {
+            "@type": "Offer",
+            "name": "Advanced Pickleball Coaching Session",
+            "priceCurrency": "PHP",
+            "price": "550"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

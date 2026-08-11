@@ -1,31 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { CoachingService, CourtLocation, TimeSlot, BookingRequest, SkillLevel } from '../types';
-import { X, Calendar, Clock, MapPin, CheckCircle, ShieldCheck, User, Mail, Phone, Target, Sparkles, Download, ArrowRight } from 'lucide-react';
+import { CoachingService, CourtLocation, TimeSlot, BookingRequest, SkillLevel, CoachProfile, UserAccount } from '../types';
+import { X, Calendar, Clock, MapPin, CheckCircle, User, Mail, Phone, Sparkles, Download, ArrowRight, CreditCard } from 'lucide-react';
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  coach?: CoachProfile;
+  currentUser?: UserAccount | null;
   services: CoachingService[];
   timeSlots: TimeSlot[];
   courts: CourtLocation[];
   preselectedService?: CoachingService;
-  preselectedSlot?: TimeSlot;
-  onConfirmBooking: (booking: BookingRequest) => void;
+  /** One or more time slots picked from the live schedule — each becomes its own booking. */
+  preselectedSlots?: TimeSlot[];
+  /** Called once with all confirmed bookings — App marks every time slot booked in a single pass. */
+  onConfirmBookings: (bookings: BookingRequest[]) => void;
+  /** Called right after bookings are confirmed, to open the payment portal for ALL of them. */
+  onProceedToPayment?: (bookings: BookingRequest[]) => void;
 }
 
 export const BookingModal: React.FC<BookingModalProps> = ({
   isOpen,
   onClose,
+  coach,
+  currentUser,
   services,
   timeSlots,
   courts,
   preselectedService,
-  preselectedSlot,
-  onConfirmBooking
+  preselectedSlots,
+  onConfirmBookings,
+  onProceedToPayment
 }) => {
   // Form State
   const [selectedServiceId, setSelectedServiceId] = useState<string>('');
-  const [selectedSlotId, setSelectedSlotId] = useState<string>('');
+  const [selectedSlots, setSelectedSlots] = useState<TimeSlot[]>([]);
   const [selectedCourtId, setSelectedCourtId] = useState<string>('');
 
   // Player Details
@@ -37,7 +46,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [notes, setNotes] = useState('');
 
   // Submission / Confirmation state
-  const [confirmedBooking, setConfirmedBooking] = useState<BookingRequest | null>(null);
+  const [confirmedBookings, setConfirmedBookings] = useState<BookingRequest[]>([]);
 
   const availableFocusOptions = [
     '3rd Shot Drop & Drive Selection',
@@ -49,28 +58,40 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     'Tournament Match Strategy'
   ];
 
-  const availableSlots = timeSlots.filter(s => s.isAvailable);
+  const coachSlots = timeSlots.filter(s => s.isAvailable && s.coachId === coach?.id);
 
   useEffect(() => {
+    // Fresh flow each time the modal opens — drop any stale confirmation state.
+    setConfirmedBookings([]);
+
+    // Prefill player details from the logged-in account.
+    if (currentUser) {
+      setPlayerName(currentUser.name ?? '');
+      setPlayerEmail(currentUser.email ?? '');
+      setPlayerPhone(currentUser.phone ?? '');
+      if (currentUser.skillLevel) setSkillLevel(currentUser.skillLevel);
+    }
+
     if (preselectedService) {
       setSelectedServiceId(preselectedService.id);
     } else if (services.length > 0 && !selectedServiceId) {
       setSelectedServiceId(services[0].id);
     }
 
-    if (preselectedSlot) {
-      setSelectedSlotId(preselectedSlot.id);
-      setSelectedCourtId(preselectedSlot.courtLocationId);
-    } else if (availableSlots.length > 0 && !selectedSlotId) {
-      setSelectedSlotId(availableSlots[0].id);
-      setSelectedCourtId(availableSlots[0].courtLocationId);
+    const slots = preselectedSlots && preselectedSlots.length > 0 ? preselectedSlots : [];
+    if (slots.length > 0) {
+      setSelectedSlots(slots);
+      setSelectedCourtId(slots[0].courtLocationId);
+    } else if (coachSlots.length > 0) {
+      setSelectedSlots([coachSlots[0]]);
+      setSelectedCourtId(coachSlots[0].courtLocationId);
     }
-  }, [preselectedService, preselectedSlot, isOpen]);
+  }, [preselectedService, preselectedSlots, isOpen, coach?.id]);
 
   if (!isOpen) return null;
 
   const currentService = services.find(s => s.id === selectedServiceId) || services[0];
-  const currentSlot = timeSlots.find(s => s.id === selectedSlotId);
+  const currentSlot = selectedSlots[0];
   const currentCourt = courts.find(c => c.id === selectedCourtId) || courts[0];
 
   const handleToggleFocus = (option: string) => {
@@ -83,51 +104,89 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentService || !currentSlot) return;
+    if (!currentService || selectedSlots.length === 0) return;
 
-    const newBooking: BookingRequest = {
-      id: `bk-${Date.now().toString().slice(-6)}`,
+    const newBookings: BookingRequest[] = selectedSlots.map((slot, i) => ({
+      id: `bk-${Date.now().toString().slice(-6)}-${i}`,
+      coachId: coach?.id ?? slot.coachId,
+      coachName: coach?.name ?? 'Coach',
       serviceId: currentService.id,
       serviceName: currentService.title,
-      date: currentSlot.date,
-      timeSlotId: currentSlot.id,
-      startTime: currentSlot.startTime,
-      endTime: currentSlot.endTime,
+      date: slot.date,
+      timeSlotId: slot.id,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
       durationMinutes: currentService.durationMinutes,
-      courtLocationName: currentSlot.courtLocationName || currentCourt.name,
+      courtLocationName: slot.courtLocationName || currentCourt.name,
       playerName,
-      playerEmail,
+      playerEmail: currentUser?.email ?? playerEmail,
       playerPhone,
       playerSkillLevel: skillLevel,
       focusAreas: selectedFocus,
       notes,
       totalPrice: currentService.price,
       status: 'confirmed',
+      paymentStatus: 'unpaid',
       createdAt: new Date().toISOString()
-    };
+    }));
 
-    onConfirmBooking(newBooking);
-    setConfirmedBooking(newBooking);
+    onConfirmBookings(newBookings);
+    setConfirmedBookings(newBookings);
+    // Payment is an explicit next step on the confirmation screen — opening it here
+    // would cover the confirmation before the user ever sees it.
   };
 
-  // Generate .ics calendar download file string
+  // ── .ics helpers ─────────────────────────────────────────────────────
+  const to24h = (t: string): number => {
+    const m = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return 0;
+    let h = parseInt(m[1], 10);
+    if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+    if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return h * 60 + parseInt(m[2], 10);
+  };
+
+  const icalDateStr = (bookingDate: string, time: string): string => {
+    const [y, mo, d] = bookingDate.split('-').map(Number);
+    const totalMin = to24h(time);
+    const dt = new Date(y, mo - 1, d, Math.floor(totalMin / 60), totalMin % 60);
+    return dt.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  };
+
+  const icalEscape = (s: string): string =>
+    s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+
   const handleDownloadCalendar = () => {
-    if (!confirmedBooking) return;
-    const icsData = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Apex Pickleball Coaching//EN
-BEGIN:VEVENT
-SUMMARY:FD Academy Pickleball Private Session with Coach Francis (${confirmedBooking.serviceName})
-DESCRIPTION:FD Academy - ${confirmedBooking.serviceName}\\nPlayer: ${confirmedBooking.playerName}\\nSkill Level: ${confirmedBooking.playerSkillLevel}\\nFocus: ${confirmedBooking.focusAreas.join(', ')}
-LOCATION:${confirmedBooking.courtLocationName}
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR`;
+    if (confirmedBookings.length !== 1) return;
+    const b = confirmedBookings[0];
+
+    const dtStart = icalDateStr(b.date, b.startTime);
+    const dtEnd   = icalDateStr(b.date, b.endTime);
+    const dtStamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+
+    const icsData = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//PB Coach Pickleball//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${b.id}@pbcoach.ph`,
+      `DTSTAMP:${dtStamp}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `SUMMARY:${icalEscape(`PB Coach \u2013 ${b.serviceName} with Coach ${b.coachName}`)}`,
+      `DESCRIPTION:${icalEscape(`PB Coach\nPlayer: ${b.playerName}\nSkill Level: ${b.playerSkillLevel}\nFocus: ${b.focusAreas.join(', ')}`)}`,
+      `LOCATION:${icalEscape(b.courtLocationName)}`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
 
     const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', `pickleball-session-${confirmedBooking.date}.ics`);
+    link.setAttribute('download', `pickleball-session-${b.date}.ics`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -135,8 +194,8 @@ END:VCALENDAR`;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl text-white overflow-hidden my-8">
-        
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl text-white overflow-hidden my-8 max-h-[90vh] flex flex-col">
+
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/50">
           <div className="flex items-center gap-2">
@@ -145,7 +204,7 @@ END:VCALENDAR`;
             </div>
             <div>
               <h3 className="text-lg font-extrabold text-white">Sign Up for Coaching Session</h3>
-              <p className="text-xs text-slate-400">Reserve your time slot with Coach Francis & FD Academy</p>
+              <p className="text-xs text-slate-400">Reserve your time slot with Coach {coach?.name ?? 'Coach'} & PB Coach</p>
             </div>
           </div>
           <button
@@ -157,68 +216,109 @@ END:VCALENDAR`;
         </div>
 
         {/* Modal Content */}
-        {confirmedBooking ? (
+        {confirmedBookings.length > 0 ? (
           /* Confirmation State */
-          <div className="p-8 text-center space-y-6">
+          <div className="p-8 text-center space-y-6 flex-1 min-h-0 overflow-y-auto">
             <div className="w-16 h-16 rounded-full bg-purple-400/20 text-purple-400 flex items-center justify-center mx-auto ring-4 ring-purple-400/30">
               <CheckCircle className="w-10 h-10" />
             </div>
 
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-purple-400 bg-purple-400/10 px-3 py-1 rounded-full border border-purple-400/20">
-                Booking Confirmed • Ref: #{confirmedBooking.id}
+                {confirmedBookings.length === 1
+                  ? `Booking Confirmed • Ref: #${confirmedBookings[0].id}`
+                  : `${confirmedBookings.length} Sessions Confirmed`}
               </span>
-              <h2 className="text-2xl font-black text-white mt-3">You're All Set, {confirmedBooking.playerName}!</h2>
+              <h2 className="text-2xl font-black text-white mt-3">You're All Set, {confirmedBookings[0].playerName}!</h2>
               <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
-                A confirmation email and session preparation guide has been dispatched to <span className="text-purple-300 font-semibold">{confirmedBooking.playerEmail}</span>.
+                Your session{confirmedBookings.length > 1 ? 's are' : ' is'} reserved and <span className="text-purple-300 font-semibold">{confirmedBookings[0].coachName}</span> can see them on their dashboard. Meet your coach at the court!
               </p>
             </div>
 
             {/* Session Summary Card */}
-            <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 text-left space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h4 className="text-base font-bold text-white">{confirmedBooking.serviceName}</h4>
-                  <p className="text-xs text-slate-400">{confirmedBooking.durationMinutes} Mins • Coach Francis (FD Academy)</p>
+            {confirmedBookings.length === 1 ? (
+              <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 text-left space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div>
+                    <h4 className="text-base font-bold text-white">{confirmedBookings[0].serviceName}</h4>
+                    <p className="text-xs text-slate-400">{confirmedBookings[0].durationMinutes} Mins • Coach {confirmedBookings[0].coachName} (PB Coach)</p>
+                  </div>
+                  <span className="text-lg font-black text-purple-400">₱{confirmedBookings[0].totalPrice}</span>
                 </div>
-                <span className="text-lg font-black text-purple-400">${confirmedBooking.totalPrice}</span>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <span>Date: <strong className="text-white">{confirmedBooking.date}</strong></span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-400" />
+                    <span>Date: <strong className="text-white">{confirmedBookings[0].date}</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-slate-400" />
+                    <span>Time: <strong className="text-white">{confirmedBookings[0].startTime} – {confirmedBookings[0].endTime}</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2 col-span-2">
+                    <MapPin className="w-4 h-4 text-slate-400" />
+                    <span>Court: <strong className="text-white">{confirmedBookings[0].courtLocationName}</strong></span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-slate-400" />
-                  <span>Time: <strong className="text-white">{confirmedBooking.startTime} – {confirmedBooking.endTime}</strong></span>
+
+                {confirmedBookings[0].focusAreas.length > 0 && (
+                  <div className="pt-2 border-t border-slate-800">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase">Focus Areas: </span>
+                    <span className="text-xs text-slate-200">{confirmedBookings[0].focusAreas.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Multiple sessions summary */
+              <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 text-left space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div>
+                    <h4 className="text-base font-bold text-white">{confirmedBookings.length} Sessions Booked · {confirmedBookings[0].serviceName}</h4>
+                    <p className="text-xs text-slate-400">{confirmedBookings[0].durationMinutes} Mins each • Coach {confirmedBookings[0].coachName} (PB Coach)</p>
+                  </div>
+                  <span className="text-lg font-black text-purple-400">
+                    ₱{confirmedBookings.reduce((sum, b) => sum + b.totalPrice, 0)}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2 col-span-2">
-                  <MapPin className="w-4 h-4 text-slate-400" />
-                  <span>Court: <strong className="text-white">{confirmedBooking.courtLocationName}</strong></span>
+                <div className="space-y-2">
+                  {confirmedBookings.map(b => (
+                    <div key={b.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300 border border-slate-800 rounded-lg px-3 py-2">
+                      <span className="flex items-center gap-2">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" /> {b.date}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" /> {b.startTime} – {b.endTime}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" /> {b.courtLocationName}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {confirmedBooking.focusAreas.length > 0 && (
-                <div className="pt-2 border-t border-slate-800">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Focus Areas: </span>
-                  <span className="text-xs text-slate-200">{confirmedBooking.focusAreas.join(', ')}</span>
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
-                onClick={handleDownloadCalendar}
-                className="flex-1 py-3 px-4 rounded-xl bg-purple-400 text-slate-950 font-bold text-sm hover:bg-purple-300 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                onClick={() => onProceedToPayment?.(confirmedBookings)}
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Download className="w-4 h-4" />
-                Add to Calendar (.ics)
+                <CreditCard className="w-4 h-4" />
+                Proceed to Payment
               </button>
+              {confirmedBookings.length === 1 && (
+                <button
+                  onClick={handleDownloadCalendar}
+                  className="flex-1 py-3 px-4 rounded-xl bg-purple-400 text-slate-950 font-bold text-sm hover:bg-purple-300 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Add to Calendar (.ics)
+                </button>
+              )}
               <button
                 onClick={() => {
-                  setConfirmedBooking(null);
+                  setConfirmedBookings([]);
                   onClose();
                 }}
                 className="py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition-colors cursor-pointer"
@@ -226,11 +326,16 @@ END:VCALENDAR`;
                 Close Window
               </button>
             </div>
+            {confirmedBookings.length > 1 && (
+              <p className="text-[10px] text-slate-500">
+                One payment covers all {confirmedBookings.length} sessions at once.
+              </p>
+            )}
           </div>
         ) : (
           /* Sign Up Form */
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            
+          <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto">
+
             {/* Step 1: Service & Time Slot Selection */}
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -249,48 +354,43 @@ END:VCALENDAR`;
                   >
                     {services.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.title} (${s.price} • {s.durationMinutes} mins)
+                        {s.title} (₱{s.price} • {s.durationMinutes} mins)
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Select Time Slot */}
+                {/* Chosen Time Slot(s) (picked from the live schedule) */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Available Time Slot</label>
-                  <select
-                    value={selectedSlotId}
-                    onChange={(e) => {
-                      setSelectedSlotId(e.target.value);
-                      const slot = timeSlots.find(s => s.id === e.target.value);
-                      if (slot) setSelectedCourtId(slot.courtLocationId);
-                    }}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 font-semibold focus:ring-2 focus:ring-purple-400 outline-none cursor-pointer"
-                  >
-                    {availableSlots.length === 0 ? (
-                      <option value="">No open slots available</option>
-                    ) : (
-                      availableSlots.map((slot) => (
-                        <option key={slot.id} value={slot.id}>
-                          {slot.date} @ {slot.startTime} – {slot.courtLocationName}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Time Slot</label>
+                  <div className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 font-semibold flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-purple-400 shrink-0" />
+                    <span>
+                      {selectedSlots.length > 0
+                        ? selectedSlots.length === 1
+                          ? `${selectedSlots[0].date} @ ${selectedSlots[0].startTime} – ${selectedSlots[0].endTime}`
+                          : `${selectedSlots.length} slots selected`
+                        : 'No open slots available'}
+                    </span>
+                  </div>
+                  {selectedSlots.length > 1 && (
+                    <ul className="mt-2 space-y-1">
+                      {selectedSlots.map(s => (
+                        <li key={s.id} className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                          <Clock className="w-3 h-3 text-purple-400 shrink-0" />
+                          {s.date} · {s.startTime} – {s.endTime} · {s.courtLocationName}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
 
-              {/* Price & Location Preview Bar */}
-              {currentService && currentSlot && (
-                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-purple-400" />
-                    <span className="text-slate-300">{currentSlot.courtLocationName}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-400">Total: </span>
-                    <span className="font-black text-purple-400 text-sm">${currentService.price}</span>
-                  </div>
+              {/* Price Total */}
+              {currentService && selectedSlots.length > 0 && (
+                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-end gap-2 text-xs">
+                  <span className="text-slate-400">Total{selectedSlots.length > 1 ? ` (${selectedSlots.length} sessions)` : ''}: </span>
+                  <span className="font-black text-purple-400 text-sm">₱{currentService.price * selectedSlots.length}</span>
                 </div>
               )}
             </div>
@@ -327,9 +427,17 @@ END:VCALENDAR`;
                       required
                       placeholder="jordan@example.com"
                       value={playerEmail}
+                      readOnly={!!currentUser}
                       onChange={(e) => setPlayerEmail(e.target.value)}
-                      className="w-full pl-9 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:ring-2 focus:ring-purple-400 outline-none"
+                      className={`w-full pl-9 border rounded-xl px-3 py-2 text-xs outline-none ${
+                        currentUser
+                          ? 'bg-slate-950 border-slate-600 text-slate-400 cursor-not-allowed'
+                          : 'bg-slate-950 border-slate-700 text-slate-100 focus:ring-2 focus:ring-purple-400'
+                      }`}
                     />
+                    {currentUser && (
+                      <p className="text-[10px] text-slate-500 mt-0.5">Linked to your account ({currentUser.email})</p>
+                    )}
                   </div>
                 </div>
 
@@ -340,7 +448,7 @@ END:VCALENDAR`;
                     <input
                       type="tel"
                       required
-                      placeholder="(555) 000-0000"
+                      placeholder="+63 917 000 0000"
                       value={playerPhone}
                       onChange={(e) => setPlayerPhone(e.target.value)}
                       className="w-full pl-9 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:ring-2 focus:ring-purple-400 outline-none"
@@ -365,53 +473,14 @@ END:VCALENDAR`;
               </div>
             </div>
 
-            {/* Step 3: Focus Areas & Notes */}
-            <div className="space-y-3 pt-2 border-t border-slate-800">
-              <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5" />
-                Step 3: What do you want to work on?
-              </h4>
-
-              <div className="flex flex-wrap gap-2">
-                {availableFocusOptions.map((opt) => {
-                  const isChecked = selectedFocus.includes(opt);
-                  return (
-                    <button
-                      type="button"
-                      key={opt}
-                      onClick={() => handleToggleFocus(opt)}
-                      className={`text-xs px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
-                        isChecked
-                          ? 'bg-purple-400/20 text-purple-300 border-purple-400/40 font-bold'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
-                      }`}
-                    >
-                      {isChecked ? '✓ ' : '+ '} {opt}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Additional Notes / Questions for Coach Francis</label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g., Struggling with wrist pop-ups, bringing my tournament partner, prefer indoor courts, etc."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 focus:ring-2 focus:ring-purple-400 outline-none"
-                />
-              </div>
-            </div>
-
             {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={!selectedSlotId}
+                disabled={selectedSlots.length === 0}
                 className="w-full py-4 bg-gradient-to-r from-purple-400 to-violet-400 hover:from-purple-300 hover:to-violet-300 text-slate-950 font-black text-base rounded-xl shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                Confirm & Reserve Session
+                Confirm Booking{selectedSlots.length > 1 ? `s (${selectedSlots.length})` : ''}
                 <ArrowRight className="w-5 h-5" />
               </button>
               <p className="text-[10px] text-center text-slate-500 mt-2">

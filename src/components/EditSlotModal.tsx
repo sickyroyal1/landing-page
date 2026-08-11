@@ -55,7 +55,7 @@ export const EditSlotModal: React.FC<EditSlotModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/30 rounded-3xl shadow-2xl text-white overflow-hidden my-6">
+      <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/30 rounded-3xl shadow-2xl text-white overflow-hidden my-6 max-h-[90vh] flex flex-col">
         
         {/* Header */}
         <div className="bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
@@ -83,7 +83,7 @@ export const EditSlotModal: React.FC<EditSlotModalProps> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 flex-1 min-h-0 overflow-y-auto">
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">Date (YYYY-MM-DD)</label>
             <div className="relative">

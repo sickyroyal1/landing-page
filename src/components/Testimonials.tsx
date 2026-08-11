@@ -48,7 +48,7 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ reviews, onAddReview
             Real Results from Real Pickleball Players
           </h2>
           <p className="text-slate-300 text-base">
-            See how players went from beginner errors to tournament podiums with Coach Alex's structured training.
+            See how players went from beginner errors to tournament podiums with PB Coach's structured coaching.
           </p>
 
           <button

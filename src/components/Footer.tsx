@@ -20,17 +20,19 @@ export const Footer: React.FC<FooterProps> = ({ coachProfile, onOpenBooking }) =
               <div className="w-8 h-8 rounded-lg bg-purple-400 flex items-center justify-center text-slate-950 font-black text-xs">
                 FD
               </div>
-              <span className="font-extrabold text-lg text-white tracking-tight">FD Academy Pickleball</span>
+              <span className="font-extrabold text-lg text-white tracking-tight">PB Coach Pickleball</span>
             </div>
 
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-              FD Academy private coaching, partner strategy, and on-court video analysis. Elevate your DUPR rating with structured mechanics.
+              PB Coach private coaching, partner strategy, and on-court video analysis. Elevate your DUPR rating with structured mechanics.
             </p>
 
-            <div className="flex items-center gap-2 text-purple-400 font-semibold">
-              <ShieldCheck className="w-4 h-4" />
-              <span>{coachProfile.certification}</span>
-            </div>
+            {coachProfile.certification && (
+              <div className="flex items-center gap-2 text-purple-400 font-semibold">
+                <ShieldCheck className="w-4 h-4" />
+                <span>{coachProfile.certification}</span>
+              </div>
+            )}
           </div>
 
           {/* Contact Details */}
@@ -80,8 +82,7 @@ export const Footer: React.FC<FooterProps> = ({ coachProfile, onOpenBooking }) =
 
         {/* Bottom Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500">
-          <p>© {new Date().getFullYear()} FD Academy & Coach {coachProfile.name}. All rights reserved.</p>
-          <p className="text-[11px]">PPR Master Professional • IPTPA Certified</p>
+          <p>© {new Date().getFullYear()} PB Coach & Coach {coachProfile.name}. All rights reserved.</p>
         </div>
 
       </div>

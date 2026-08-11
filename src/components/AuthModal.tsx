@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
-import { UserAccount, SkillLevel } from '../types';
-import { X, ShieldCheck, User, Mail, Lock, Sparkles, CheckCircle2, UserCheck, KeyRound } from 'lucide-react';
+import { UserAccount, SkillLevel, CoachProfile } from '../types';
+import { X, ShieldCheck, User, Mail, Sparkles, UserCheck, KeyRound } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogin: (user: UserAccount) => void;
+  coaches: CoachProfile[];
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  onLogin
+  onLogin,
+  coaches
 }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
+  const [role, setRole] = useState<'user' | 'coach' | 'admin'>('user');
+  const [selectedCoachId, setSelectedCoachId] = useState<string>('');
 
   // Form states
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>('3.5 - Intermediate');
 
@@ -29,9 +31,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const demoAdmin: UserAccount = {
     id: 'usr-admin-1',
     name: 'Coach Francis',
-    email: 'admin@fdacademy.com',
+    email: 'admin@pbcoach.com',
     role: 'admin',
-    phone: '(555) 234-5678',
+    phone: '+63 917 234 5678',
     skillLevel: '4.5+ - Advanced / Tournament'
   };
 
@@ -40,20 +42,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     name: 'Alex Morgan',
     email: 'alex.m@gmail.com',
     role: 'user',
-    phone: '(555) 987-6543',
+    phone: '+63 918 987 6543',
     skillLevel: '3.5 - Intermediate'
   };
+
+  // One demo coach account per coach in the roster
+  const demoCoachAccounts: UserAccount[] = coaches.map((c) => ({
+    id: `usr-coach-${c.id}`,
+    name: `Coach ${c.name}`,
+    email: c.email,
+    role: 'coach',
+    coachId: c.id,
+    phone: c.phone,
+    skillLevel: '4.5+ - Advanced / Tournament'
+  }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
+    const coach = coaches.find((c) => c.id === selectedCoachId) ?? coaches[0];
+
     const user: UserAccount = {
       id: `usr-${Date.now()}`,
-      name: name || (email.split('@')[0]),
+      name: role === 'coach' ? `Coach ${coach?.name ?? 'Coach'}` : name || (email.split('@')[0]),
       email,
       role,
-      phone: phone || '(555) 123-4567',
+      coachId: role === 'coach' ? coach?.id : undefined,
+      phone: phone || '+63 917 123 4567',
       skillLevel
     };
 
@@ -62,8 +78,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl text-white overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl text-white max-h-[90vh] flex flex-col overflow-hidden my-6">
         
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-500/20 via-slate-900 to-slate-900 px-6 py-5 border-b border-slate-800 flex items-center justify-between">
@@ -72,7 +88,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">FD Academy Account</h3>
+              <h3 className="text-lg font-black text-white">PB Coach Account</h3>
               <p className="text-xs text-slate-400">Log in or sign up to manage bookings</p>
             </div>
           </div>
@@ -113,6 +129,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <span>Log in as <strong>Player</strong></span>
             </button>
           </div>
+
+          {demoCoachAccounts.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {demoCoachAccounts.map((ca) => (
+                <button
+                  key={ca.id}
+                  onClick={() => { onLogin(ca); onClose(); }}
+                  className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Coach <strong>{ca.name.replace('Coach ', '')}</strong></span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Tabs: Login / Sign Up */}
@@ -140,12 +171,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 flex-1 min-h-0 overflow-y-auto">
           
           {/* Role selector for signup or explicit role choice */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">Account Role</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setRole('user')}
@@ -156,21 +187,48 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
-                Player User
+                Player
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('coach')}
+                className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  role === 'coach'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Coach
               </button>
               <button
                 type="button"
                 onClick={() => setRole('admin')}
                 className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   role === 'admin'
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                    ? 'bg-rose-500/20 border-rose-500 text-rose-300'
                     : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
                 }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Admin Coach
+                <KeyRound className="w-3.5 h-3.5" />
+                Admin
               </button>
             </div>
+
+            {role === 'coach' && (
+              <div className="mt-3">
+                <label className="block text-xs font-medium text-slate-300 mb-1">Which coach are you?</label>
+                <select
+                  value={selectedCoachId}
+                  onChange={(e) => setSelectedCoachId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                >
+                  {coaches.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {activeTab === 'signup' && (
@@ -198,22 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={role === 'admin' ? 'admin@fdacademy.com' : 'player@gmail.com'}
-                required
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-400"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={role === 'admin' ? 'admin@pbcoach.com' : 'player@gmail.com'}
                 required
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-400"
               />

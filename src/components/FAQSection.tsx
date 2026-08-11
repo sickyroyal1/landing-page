@@ -7,23 +7,15 @@ export const FAQSection: React.FC = () => {
   const faqs = [
     {
       q: "What gear should I bring to my coaching session?",
-      a: "Bring your paddle, court shoes (non-marking rubber soles recommended), a water bottle, and athletic apparel. Coach Alex provides tournament-grade pickleballs, drill cones, video tripod gear, and demo paddles if you want to test new equipment."
+      a: "Bring your paddle, court shoes (non-marking rubber soles recommended), a water bottle, and athletic apparel. Your coach provides tournament-grade pickleballs, drill cones, video tripod gear, and demo paddles if you want to test new equipment."
     },
     {
       q: "How are court locations selected?",
-      a: "You can select your preferred court during booking! Coach Alex conducts sessions at Central Park Pickleball Club, Highland Indoor Hub, and Riverside Park. Alternatively, if you have access to a private court or HOA community court within 15 miles, select 'Private/Client Court'."
+      a: "Pick your region and area during booking! Our coaches serve the Central (Dumaguete, Banilad, Sibulan, Valencia), Northern (Tanjay, Bais, Manjuyod, Amlan), Upper Northern (Guihulngan, Jimalalud, La Libertad), and Southern regions of Negros Oriental — with optional sub-regions like Bacong - Siaton (Bacong, Dauin, Zamboanguita, Siaton) and Sta. Catalina - Bayawan (Sta. Catalina, Bayawan, Basay). Private & HOA courts are also available in select areas."
     },
     {
       q: "What happens if there is bad weather (rain or extreme heat)?",
-      a: "For outdoor sessions, if weather prevents safe court conditions, Coach Alex will automatically transition your session to the climate-controlled Highland Indoor Hub or offer a 100% free reschedule at your convenience."
-    },
-    {
-      q: "Can I bring my regular tournament partner?",
-      a: "Absolutely! The '2-on-1 Partner Strategy' session is specifically crafted for doubles teams looking to master stacking, middle court communication, and tactical partner coverage."
-    },
-    {
-      q: "How does the video stroke breakdown work?",
-      a: "Coach Alex uses high-speed iPad cameras on court to capture key strokes (3rd shot drops, dinks, serves). During water breaks, you'll review slow-motion footage together with drawing overlays so you can instantly see and feel biomechanical adjustments."
+      a: "For outdoor sessions, if weather prevents safe court conditions, your coach will automatically move your session to a covered or indoor court nearby, or offer a 100% free reschedule at your convenience."
     },
     {
       q: "What is the cancellation and rescheduling policy?",
