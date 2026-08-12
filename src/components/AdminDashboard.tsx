@@ -148,7 +148,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <Trophy className="w-5 h-5" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-black text-white">PB Coach</p>
+            <p className="text-sm font-black text-white">DINKLAB +</p>
             <p className="text-[10px] text-slate-400 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-amber-400" /> Admin Dashboard
             </p>

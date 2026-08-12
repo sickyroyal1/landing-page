@@ -31,7 +31,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const demoAdmin: UserAccount = {
     id: 'usr-admin-1',
     name: 'Coach Francis',
-    email: 'admin@pbcoach.com',
+    email: 'admin@dinklab.com',
     role: 'admin',
     phone: '+63 917 234 5678',
     skillLevel: '4.5+ - Advanced / Tournament'
@@ -88,7 +88,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">PB Coach Account</h3>
+              <h3 className="text-lg font-black text-white">DINKLAB + Account</h3>
               <p className="text-xs text-slate-400">Log in or sign up to manage bookings</p>
             </div>
           </div>
@@ -256,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={role === 'admin' ? 'admin@pbcoach.com' : 'player@gmail.com'}
+                placeholder={role === 'admin' ? 'admin@dinklab.com' : 'player@gmail.com'}
                 required
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-400"
               />

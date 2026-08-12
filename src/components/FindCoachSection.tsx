@@ -76,7 +76,7 @@ export const FindCoachSection: React.FC<FindCoachSectionProps> = ({
   };
 
   return (
-    <section id="find-coach" className="min-h-screen py-20 bg-slate-950 text-white relative flex items-center">
+    <section id="find-coach" className="min-h-screen py-20 bg-slate-950 text-white relative flex items-center snap-start">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
 
         {/* Section Header */}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PHILIPPINE_PROVINCES, PROVINCE_VIEWBOX } from './PhilippineProvinces';
+import { PHILIPPINE_PROVINCES, PROVINCE_VIEWBOX, PROVINCE_ALIASES } from './PhilippineProvinces';
 
 /**
  * Line-art Philippine map rendered from GADM 4.1 province boundaries.
@@ -38,14 +38,24 @@ function easeOutCubic(t: number) {
   return 1 - Math.pow(1 - t, 3);
 }
 
+/**
+ * Resolve a dropdown province code to the canonical map key. Some psgc.cloud
+ * provinces (Davao Occidental, Maguindanao del Norte) have no polygon of their
+ * own — GADM predates those splits — so we light up the combined parent polygon.
+ */
+function canonicalCode(code: string | null): string | null {
+  return code ? (PROVINCE_ALIASES[code] ?? code) : null;
+}
+
 export const PhilippineMap: React.FC<PhilippineMapProps> = ({ highlight, className }) => {
   const [viewBox, setViewBox] = useState(FULL_VIEWBOX.join(' '));
   const animRef = useRef<number>(0);
   const fromRef = useRef<number[]>(FULL_VIEWBOX);
 
   useEffect(() => {
-    const target = highlight && PHILIPPINE_PROVINCES[highlight]
-      ? zoomViewBox(PHILIPPINE_PROVINCES[highlight].bbox)
+    const hl = canonicalCode(highlight);
+    const target = hl && PHILIPPINE_PROVINCES[hl]
+      ? zoomViewBox(PHILIPPINE_PROVINCES[hl].bbox)
       : FULL_VIEWBOX;
     const from = fromRef.current.map(Number);
     const startTime = performance.now();
@@ -99,7 +109,7 @@ export const PhilippineMap: React.FC<PhilippineMapProps> = ({ highlight, classNa
       </defs>
 
       {Object.entries(PHILIPPINE_PROVINCES).map(([code, province]) => {
-        const lit = code === highlight;
+        const lit = code === canonicalCode(highlight);
         return (
           <path
             key={code}

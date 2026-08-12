@@ -43,13 +43,13 @@ export const Hero: React.FC<HeroProps> = ({
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1]">
               {siteCopy?.heroHeadline ? (
-                siteCopy.heroHeadline.includes('PB Coach') ? (
+                siteCopy.heroHeadline.includes('DINKLAB +') ? (
                   <>
-                    {siteCopy.heroHeadline.split('PB Coach')[0]}
+                    {siteCopy.heroHeadline.split('DINKLAB +')[0]}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-violet-300 to-fuchsia-300">
-                      PB Coach
+                      DINKLAB +
                     </span>
-                    {siteCopy.heroHeadline.split('PB Coach')[1]}
+                    {siteCopy.heroHeadline.split('DINKLAB +')[1]}
                   </>
                 ) : (
                   siteCopy.heroHeadline
@@ -58,7 +58,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <>
                   Elevate Your Pickleball Game with Pro Coaches at{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-violet-300 to-fuchsia-300">
-                    PB Coach
+                    DINKLAB +
                   </span>
                 </>
               )}

@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+/* Landing scroll-snap: snapping from the full-screen hero banner down to the
+   location picker. mandatory = the scroll always rests on a section, so one
+   scroll notch glides straight from the hero to the picker. Only elements with
+   snap-start snap, and only these two landing sections have it — other pages
+   are unaffected. scroll-padding-top clears the sticky navbar so a snapped
+   section's heading isn't hidden behind it. */
+html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+@theme {
+  --animate-heartbeat: heartbeat 2.5s ease-in-out infinite;
+
+  @keyframes heartbeat {
+    0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(167, 139, 250, 0)); }
+    30%  { transform: scale(1.04); filter: drop-shadow(0 0 45px rgba(167, 139, 250, 0.85)); }
+    55%  { transform: scale(1);    filter: drop-shadow(0 0 20px rgba(167, 139, 250, 0.35)); }
+    70%  { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(167, 139, 250, 0)); }
+    100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(167, 139, 250, 0)); }
+  }
+}

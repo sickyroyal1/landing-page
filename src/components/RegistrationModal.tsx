@@ -154,12 +154,12 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
     const coach: CoachProfile = {
       id: `coach-reg-${Date.now()}`,
       name,
-      title: 'Pickleball Coach at PB Coach',
+      title: 'Pickleball Coach at DINKLAB +',
       certification: '',
       duprRating,
       yearsCoaching,
       studentsTrained: 0,
-      bio: bio || `${name} is a new member of the PB Coach team — full bio coming soon.`,
+      bio: bio || `${name} is a new member of the DINKLAB + team — full bio coming soon.`,
       specialties: [],
       email,
       phone: phone || '+63 917 000 0000',
@@ -197,7 +197,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">Create Your PB Coach Account</h3>
+              <h3 className="text-lg font-black text-white">Create Your DINKLAB + Account</h3>
               <p className="text-xs text-slate-400">Register as a player — or apply to join our coaching team</p>
             </div>
           </div>
@@ -331,7 +331,7 @@ export const RegistrationModal: React.FC<RegistrationModalProps> = ({
           <form onSubmit={handleCoachSubmit} className="p-6 space-y-4 flex-1 min-h-0 overflow-y-auto">
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-xs text-amber-300">
               <TrendingUp className="w-3.5 h-3.5 shrink-0" />
-              Apply to coach with PB Coach. Your profile goes live and players in your regions can book you right away.
+              Apply to coach with DINKLAB +. Your profile goes live and players in your regions can book you right away.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

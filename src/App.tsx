@@ -1,5 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Navbar } from './components/Navbar';
+import { HeroBanner } from './components/HeroBanner';
 import { Hero } from './components/Hero';
 import { ServicesSection } from './components/ServicesSection';
 import { CoachProfileSection } from './components/CoachProfileSection';
@@ -607,8 +608,10 @@ export default function App() {
             <FAQSection />
           </>
         ) : (
-          /* Landing — the PSGC province → city picker */
-          <Suspense fallback={<MinimalLoading label="Loading…" />}>
+          /* Landing — hero banner + the PSGC province → city picker */
+          <>
+            <HeroBanner />
+            <Suspense fallback={<MinimalLoading label="Loading…" />}>
             <FindCoachSection
               provinces={psgcProvinces}
               cities={psgcCities}
@@ -620,7 +623,8 @@ export default function App() {
               onSelectCity={handleSelectCity}
               onSelectCoach={handleSelectCoach}
             />
-          </Suspense>
+            </Suspense>
+          </>
         )}
       </main>
 

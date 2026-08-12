@@ -10,8 +10,8 @@ Player-facing pickleball booking site for Negros Oriental, Philippines. React 19
 
 ## Data / storage
 - localStorage keys (bump the trailing version to reset stored data):
-  - coaches: `pickleball_coach_coaches_v8`
-  - site copy: `pickleball_coach_site_copy_v4`
+  - coaches: `pickleball_coach_coaches_v11`
+  - site copy: `pickleball_coach_site_copy_v5`
   - services: `pickleball_coach_services_v3`
   - time slots: `pickleball_coach_time_slots_v6`
   - bookings: `pickleball_coach_bookings_v7`

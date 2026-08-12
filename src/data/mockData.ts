@@ -36,7 +36,7 @@ export const initialSiteCopy: SiteCopy = {
 };
 
 const LS_SERVICES_KEY = "pickleball_coach_services_v4";
-const LS_SITE_COPY_KEY = "pickleball_coach_site_copy_v4";
+const LS_SITE_COPY_KEY = "pickleball_coach_site_copy_v5";
 
 export function loadStoredServices(): CoachingService[] {
   try {
@@ -78,12 +78,12 @@ export const initialCoaches: CoachProfile[] = [
   {
     id: "coach-francis",
     name: "Francis",
-    title: "Head Pickleball Professional, PB Coach",
+    title: "Head Pickleball Professional, DINKLAB +",
     certification: "",
     duprRating: 3.9,
     yearsCoaching: 8,
     studentsTrained: 50,
-    bio: "Former collegiate tennis athlete turned 5.0 competitive pickleball player and founder of PB Coach. I specialize in turning high-level tactical strategies into simple, repeatable habits. Whether you want to master the 3rd shot drop, dominate the kitchen line, or break through to 4.0+ DUPR, my structured drills and video breakdowns deliver fast, permanent results.",
+    bio: "Former collegiate tennis athlete turned 5.0 competitive pickleball player and founder of DINKLAB +. I specialize in turning high-level tactical strategies into simple, repeatable habits. Whether you want to master the 3rd shot drop, dominate the kitchen line, or break through to 4.0+ DUPR, my structured drills and video breakdowns deliver fast, permanent results.",
     specialties: [
       "3rd Shot Drop & Drive Selection",
       "Kitchen Battles & Reset Mechanics",
@@ -91,7 +91,7 @@ export const initialCoaches: CoachProfile[] = [
       "Fast Hands & Counter-Attacks",
       "Tournament Mental Toughness"
     ],
-    email: "francis@pbcoach.com",
+    email: "francis@dinklab.com",
     phone: "+63 917 839 2041",
     instagram: "@pbcoach_pickleball",
     locationCity: "Dumaguete City & nearby areas",
@@ -123,7 +123,7 @@ export const initialCoaches: CoachProfile[] = [
       "Footwork & Split-Step Timing",
       "Beginner to 3.5 Development"
     ],
-    email: "dana@pbcoach.com",
+    email: "dana@dinklab.com",
     phone: "+63 918 772 4309",
     instagram: "@dana_coaches",
     locationCity: "Northern & Upper Northern areas",
@@ -153,7 +153,7 @@ export const initialCoaches: CoachProfile[] = [
       "Transition Zone Control",
       "Tournament Preparation"
     ],
-    email: "marcus@pbcoach.com",
+    email: "marcus@dinklab.com",
     phone: "+63 919 208 7741",
     instagram: "@marcus_pickleball",
     locationCity: "Southern Negros Oriental",
@@ -183,7 +183,7 @@ export const initialCoaches: CoachProfile[] = [
       "Doubles Positioning",
       "Rally Consistency"
     ],
-    email: "paolo@pbcoach.com",
+    email: "paolo@dinklab.com",
     phone: "+63 920 314 8820",
     instagram: "@paolo_pickleball",
     locationCity: "Valencia & central Negros Oriental",
@@ -213,7 +213,7 @@ export const initialCoaches: CoachProfile[] = [
       "Footwork & Balance",
       "Women's Group Clinics"
     ],
-    email: "jenna@pbcoach.com",
+    email: "jenna@dinklab.com",
     phone: "+63 921 906 1187",
     instagram: "@jenna_pickleball",
     locationCity: "Manjuyod, Amlan & surrounding areas",
@@ -243,7 +243,7 @@ export const initialCoaches: CoachProfile[] = [
       "Transition Zone Punishing",
       "Youth & Junior Clinics"
     ],
-    email: "karlo@pbcoach.com",
+    email: "karlo@dinklab.com",
     phone: "+63 922 623 4472",
     instagram: "@karlo_pickleball",
     locationCity: "Guihulngan, Jimalalud & La Libertad",
@@ -273,7 +273,7 @@ export const initialCoaches: CoachProfile[] = [
       "Fundamentals Bootcamps",
       "Family Sessions"
     ],
-    email: "lena@pbcoach.com",
+    email: "lena@dinklab.com",
     phone: "+63 927 845 3390",
     instagram: "@lena_pickleball",
     locationCity: "Sta. Catalina, Bayawan & Basay",
@@ -1214,7 +1214,7 @@ export const initialBookings: BookingRequest[] = [
 ];
 
 // LocalStorage Persistence Keys (bumped versions — multi-coach structure changed the shape)
-const LS_COACHES_KEY = "pickleball_coach_coaches_v10";
+const LS_COACHES_KEY = "pickleball_coach_coaches_v11";
 const LS_SLOTS_KEY = "pickleball_coach_time_slots_v8";
 const LS_BOOKINGS_KEY = "pickleball_coach_bookings_v8";
 

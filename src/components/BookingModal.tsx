@@ -167,16 +167,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     const icsData = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//PB Coach Pickleball//EN',
+      'PRODID:-//DINKLAB+//EN',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',
-      `UID:${b.id}@pbcoach.ph`,
+      `UID:${b.id}@dinklab.ph`,
       `DTSTAMP:${dtStamp}`,
       `DTSTART:${dtStart}`,
       `DTEND:${dtEnd}`,
-      `SUMMARY:${icalEscape(`PB Coach \u2013 ${b.serviceName} with Coach ${b.coachName}`)}`,
-      `DESCRIPTION:${icalEscape(`PB Coach\nPlayer: ${b.playerName}\nSkill Level: ${b.playerSkillLevel}\nFocus: ${b.focusAreas.join(', ')}`)}`,
+      `SUMMARY:${icalEscape(`DINKLAB + \u2013 ${b.serviceName} with Coach ${b.coachName}`)}`,
+      `DESCRIPTION:${icalEscape(`DINKLAB +\nPlayer: ${b.playerName}\nSkill Level: ${b.playerSkillLevel}\nFocus: ${b.focusAreas.join(', ')}`)}`,
       `LOCATION:${icalEscape(b.courtLocationName)}`,
       'STATUS:CONFIRMED',
       'END:VEVENT',
@@ -204,7 +204,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-extrabold text-white">Sign Up for Coaching Session</h3>
-              <p className="text-xs text-slate-400">Reserve your time slot with Coach {coach?.name ?? 'Coach'} & PB Coach</p>
+              <p className="text-xs text-slate-400">Reserve your time slot with Coach {coach?.name ?? 'Coach'} & DINKLAB +</p>
             </div>
           </div>
           <button
@@ -241,7 +241,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div>
                     <h4 className="text-base font-bold text-white">{confirmedBookings[0].serviceName}</h4>
-                    <p className="text-xs text-slate-400">{confirmedBookings[0].durationMinutes} Mins • Coach {confirmedBookings[0].coachName} (PB Coach)</p>
+                    <p className="text-xs text-slate-400">{confirmedBookings[0].durationMinutes} Mins • Coach {confirmedBookings[0].coachName} (DINKLAB +)</p>
                   </div>
                   <span className="text-lg font-black text-purple-400">₱{confirmedBookings[0].totalPrice}</span>
                 </div>
@@ -274,7 +274,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div>
                     <h4 className="text-base font-bold text-white">{confirmedBookings.length} Sessions Booked · {confirmedBookings[0].serviceName}</h4>
-                    <p className="text-xs text-slate-400">{confirmedBookings[0].durationMinutes} Mins each • Coach {confirmedBookings[0].coachName} (PB Coach)</p>
+                    <p className="text-xs text-slate-400">{confirmedBookings[0].durationMinutes} Mins each • Coach {confirmedBookings[0].coachName} (DINKLAB +)</p>
                   </div>
                   <span className="text-lg font-black text-purple-400">
                     ₱{confirmedBookings.reduce((sum, b) => sum + b.totalPrice, 0)}

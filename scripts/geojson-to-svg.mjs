@@ -98,7 +98,10 @@ function toPsgc(gadmCode) {
   const s = String(gadmCode);
   const region = s.slice(0, -2);
   const province = s.slice(-2);
-  return region.padStart(2, '0') + province.padStart(3, '0') + '00000';
+  // GADM ships the old ARMM region code (15) for BARMM provinces;
+  // psgc.cloud uses region 19 for them.
+  const normRegion = region === '15' ? '19' : region;
+  return normRegion.padStart(2, '0') + province.padStart(3, '0') + '00000';
 }
 
 // GADM 4.1 ships a few wrong CC_1 codes / renamed provinces. Keyed by GID_1 → correct 10-digit PSGC.
@@ -114,6 +117,16 @@ const NAME_OVERRIDES = {
   'CompostelaValley': 'Davao de Oro',
   'NorthCotabato': 'Cotabato',
   'MetropolitanManila': 'Metro Manila',
+};
+
+// GADM predates the 2013/2022 province splits, so two psgc.cloud provinces
+// have no polygon of their own. Alias their code to the combined parent polygon:
+//  - Davao Occidental (11086…) was split out of Davao del Sur; GADM keeps it merged.
+//  - Maguindanao del Norte (19087…) — GADM has one combined Maguindanao polygon,
+//    which we map to del Sur (19088…). Selecting del Norte lights the combined shape.
+const PROVINCE_ALIASES = {
+  '1108600000': '1102400000',  // Davao Occidental → Davao del Sur
+  '1908700000': '1908800000',  // Maguindanao del Norte → del Sur
 };
 
 // GADM names are concatenated ("NegrosOccidental") → "Negros Occidental".
@@ -173,6 +186,12 @@ export const PROVINCE_VIEWBOX = '0 0 ${W} ${H}';
 
 export const PHILIPPINE_PROVINCES: Record<string, { name: string; path: string; bbox: [number, number, number, number] }> = {
 ${provinces.map(p => `  '${p.psgcCode}': { name: '${p.name.replace(/'/g, "\\'")}', path: '${p.pathData}', bbox: [${p.bbox.join(',')}] },`).join('\n')}
+};
+
+// psgc.cloud provinces that have no polygon of their own (GADM merged/split) —
+// map their code to the canonical PHILIPPINE_PROVINCES key to highlight.
+export const PROVINCE_ALIASES: Record<string, string> = {
+${Object.entries(PROVINCE_ALIASES).map(([k, v]) => `  '${k}': '${v}',`).join('\n')}
 };
 `;
 

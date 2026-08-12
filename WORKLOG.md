@@ -2,7 +2,60 @@
 
 Auto-updated by Claude at the end of each working session. On a new session: read this file, then continue from the **Latest state** entry.
 
-## Latest state (2026-08-10)
+## Latest state (2026-08-13)
+
+### Province glow fix — all 82 dropdown provinces now light up the map (complete, verified)
+- **Bug**: selecting some provinces in the location picker didn't glow/zoom — the dropdown code had no matching key in `PHILIPPINE_PROVINCES`. Root cause: GADM 4.1 predates two things psgc.cloud has — the **ARMM→BARMM region recode** (15→19) and the **2013/2022 province splits**.
+- **6 provinces were broken**, in 3 ways:
+  1. **Basilan, Lanao del Sur, Sulu, Tawi-Tawi** — GADM carries the old ARMM region code (15), psgc.cloud uses BARMM region 19. Map had them as `15007/15036/15066/15070…`; dropdown asked for `19007/19036/19066/19070…`. Fixed in the generator.
+  2. **Maguindanao del Norte (`1908700000`)** — GADM has ONE combined Maguindanao polygon (mapped to del Sur `1908800000`). No del Norte geometry exists.
+  3. **Davao Occidental (`1108600000`)** — GADM merged it into Davao del Sur (`1102400000`). No separate geometry.
+- **Fix** (`scripts/geojson-to-svg.mjs` + regenerated `PhilippineProvinces.ts`):
+  - `toPsgc()` now remaps region `15` → `19` (ARMM → BARMM) before building the code.
+  - New `PROVINCE_ALIASES` export mapping the two split provinces to their combined parent polygon: `1108600000 → 1102400000`, `1908700000 → 1908800000`.
+  - Regenerated — geometry byte-identical, only the 4 BARMM keys changed (verified via git diff: no path data touched).
+- **Map component** (`PhilippineMap.tsx`): `canonicalCode()` normalizes `highlight` through `PROVINCE_ALIASES` before both the zoom target lookup and the `code === highlight` glow test — so Davao Occidental / Maguindanao del Norte glow the combined parent shape (zoom included).
+- Result: all 82 dropdown provinces (verified against the live psgc.cloud `/provinces` endpoint) resolve to a map key. Metro Manila is still in the map under `1303900000` but is not in `/provinces`, so it's never selectable — harmless.
+- Verified: `npx tsc --noEmit` ✓.
+
+### Logo assets live — navbar Vector logo + landing hero banner with the 3D logo (complete, verified)
+- **Navbar logo → `DINKLAB + Text White.png`** (`Navbar.tsx`): transparent-background RGBA version of the white-on-black wordmark — background removed so white text sits directly on the dark navbar with no `mix-blend-screen` needed. Rendered at **3×** — `h-42 md:h-48` (`w-auto`) — white text overflows the normal-height navbar (`h-16 md:h-20` stays unchanged; transparent bg means the overflow is clean white text over the dark page content, no black box). Click-to-scroll-top behavior kept. The Vector PNG is now used only in the footer.
+- **Hero banner → `DINKLAB + Logo 3d No BG.png`** (transparent-background RGBA version — avoids the "floating box" of the black-bg PNG) on the **landing page only** (NEW `HeroBanner.tsx`, wired in `App.tsx` above `FindCoachSection` — i.e. above the province → city location picker). The 3D flask logo at `w-80 sm:w-96 lg:w-[30rem]` (320/384/480px — enlarged per request), rendered as the **plain PNG — no `mix-blend-screen`**. **Animation**: `animate-heartbeat` (replaces the old `animate-float` bob) — a single pulse per cycle (slower, 2.5s loop; smaller pump, scale to 1.04) with a violet `filter: drop-shadow` glow that peaks with the beat and fades to nothing between beats (glow hugs the logo's alpha silhouette, no box). Headline → **"LEVEL UP YOUR GAME."** and sub-line → **"Precision coaching for players who want more from every session, every rally, and every match."**, plus a **"Book now"** CTA button (purple gradient, matches Hero CTA style) that smooth-scrolls (`scrollIntoView({ behavior: 'smooth' })`) down to the location picker (`#find-coach`). **Full-screen + scroll-snap**: hero banner is now `min-h-screen` flex-centered (so the "Find Your Coach Anywhere in the Philippines" heading below it is out of the initial viewport); `html { scroll-snap-type: y mandatory; scroll-behavior: smooth; scroll-padding-top: 5rem }` in `index.css` + `snap-start` on the hero banner and the location-picker section → **one scroll notch glides straight from the hero to the picker** (mandatory = the scroll always rests on a section; `scroll-behavior: smooth` makes the snap transition animate with a smooth glide rather than jumping abruptly; only the two landing sections snap, so coach-portal pages unaffected). `scroll-padding-top: 5rem` clears the sticky navbar so the picker heading isn't hidden behind it. NOT on the coach profile page (`Hero.tsx` was reverted to its original headline/achievements layout — the banner was briefly mis-placed there and removed).
+- **Footer logo → same Vector PNG** (`Footer.tsx`): DL tile swapped for the logo at `h-9` with `mix-blend-screen`; the "DINKLAB +" text wordmark stays beside it there (footer is wide enough for a readable wordmark — at footer scale the text baked into the PNG would be too small).
+- **`animate-float` utility**: added in `src/index.css` via Tailwind v4 `@theme` (6s up/down bob) — used by the hero banner.
+- **Assets**: all three PNGs already live in `public/` (copied to `dist/` on build) — `DINKLAB + Text White.png` (navbar, transparent RGBA), `DINK LAB + Vector.png` (footer), `DINKLAB + Logo 3d No BG.png` (hero banner). No brand copy changed.
+- Verified: `npm run lint` ✓, `npm run build` ✓. Tests not re-run (no logic touched).
+- **Still flagged (deploy-time)**: `pbcoach.ph` domain placeholder (index.html / robots.txt / sitemap.xml) + Instagram `@pbcoach_pickleball` handle — unchanged.
+
+## Previous state (2026-08-12)
+
+### Full "DINKLAB +" rebrand — every user-facing surface (complete, verified)
+- **Brand rename → "DINKLAB +"** applied site-wide (the 2026-08-11 pass was navbar-only). All "PB Coach" brand copy is gone from `src/`, `index.html`, `public/`, and generated assets.
+- **Files touched** (user-facing text): `index.html` (title / og:site_name / og:title / og:image:alt / twitter:title / JSON-LD `name`), `src/data/mockData.ts` (7 coach emails `@pbcoach.com` → `@dinklab.com`, Coach Francis title/bio), `Footer.tsx` (DL tile + "DINKLAB +" wordmark + copy), `Hero.tsx` (gradient split marker `'PB Coach'` → `'DINKLAB +'`), `AuthModal.tsx` (heading + demo admin email), `RegistrationModal.tsx` (headings + coach bio), `AdminDashboard.tsx` (sidebar label), `BookingModal.tsx` (.ics PRODID "DINKLAB+", UID host `@dinklab.ph`, SUMMARY/DESCRIPTION, modal copy), `Testimonials.tsx` ("DINKLAB + structured coaching"), `public/favicon.svg` (DL), `metadata.json`.
+- **`src/scripts/gen_og_image.py` (NEW)**: reproducible Pillow recipe for `public/og-image.jpg` (1200×630) — cover-crop of hero_header_image.jpg, blur+darken+purple-tint, "DINKLAB +" purple eyebrow pill, "Elevate Your Pickleball Game" headline, sub-line, "Book a Session →" CTA. OG image regenerated; re-run after any brand change.
+- **Storage keys bumped** to force refresh of stale "PB Coach" data in existing clients: coaches `v10 → v11`, site copy `v4 → v5`. (Full current set: coaches `v11`, site copy `v5`, services `v4`, slots `v8`, bookings `v8`, reviews `v1`, user `v1`.)
+- **Demo logins stay in sync automatically**: AuthModal builds `demoCoachAccounts` from the coach roster's `c.email`, so the email changes in mockData.ts flowed through with no extra edits.
+- Verified: `npm run lint` ✓, `npm test` ✓ (**18/18**), `npm run build` ✓ (main bundle 375 kB + lazy chunks). Grep for `PB Coach`/`pbcoach` in `src/` returns only `@pbcoach_pickleball` (real Instagram handle, kept).
+- **Still flagged (deploy-time, not blocking rebrand)**: `pbcoach.ph` domain placeholder in `index.html` (canonical, OG/Twitter URLs, JSON-LD `@id`/`url`/`image`/`logo`), `public/robots.txt`, `public/sitemap.xml` — swap for the real domain before going live. Instagram `@pbcoach_pickleball` handle in mockData.ts + JSON-LD sameAs stays unless the account is renamed. `CLAUDE.md` storage-key list updated to match.
+
+## Previous state (2026-08-11)
+
+### Navbar polish pass #2 — branding + typography + nav links (complete, visual)
+- **Brand rename → "DINKLAB +"**: logo block now shows "DL" initials (purple gradient tile) + "DINKLAB +" wordmark. (Footer still says "PB Coach Pickleball" — rebrand scope was navbar-only.)
+- **Font → Inter**: `index.html` now loads Google Font Inter (400–800 via preconnect + stylesheet); Navbar header applies it via `style={{ fontFamily: "'Inter', sans-serif" }}`.
+- **4 nav links after coach selection**: Home (#home → smooth scroll to top), Availability (#availability), Rates (#services), Contact (#contact). Footer gained `id="contact"` so the Contact link has a target.
+- **Spacing**: nav link gap bumped `space-x-8` → `space-x-12`; links `font-semibold tracking-wide` + purple underline hover.
+- Verified via Playwright screenshots at desktop + landing width (v3 set) — clean layout, no CTA clutter.
+- **Not touched (still deferred)**: "PB Coach" wording in index.html title/OG/JSON-LD, hero section, footer, AuthModal/RegistrationModal headings — these still say PB Coach. Decide if the whole site rebrands to DINKLAB +.
+
+### Navbar redesign (complete, visual) — superseded by polish pass #2 above
+- **3 CTAs → 1**: Removed standalone Register button (AuthModal already has Sign Up tab), removed "Book Now" (already in page body as "Book Your Session"). Single "Sign In" button opens AuthModal.
+- **Fixed breakpoint gap**: Auth buttons moved from `lg` (1024px) to `md` (768px) to match nav links — no more awkward intermediate state.
+- **Consistent styling**: All auth buttons use `bg-purple-500/10 text-purple-300 border border-purple-400/30` pill style.
+- **Mobile drawer cleaned up**: Removed "Book Private Session", simplified to nav links + Sign In/logout only.
+- **Compact height**: `h-16 md:h-20` (was `h-20`), nav link spacing `space-x-8` (was `space-x-10`).
+
+## Previous state (2026-08-10)
 
 ### Deferred-items sweep → all 6 fixed (complete, verified) — multi-slot payment / UTC dates / review persistence / 24h cancel / JSON-LD / achievement images
 - **Multi-slot payment gap — FIXED**: only the first of several sessions was payable; the rest were stuck "Payment Due". `PaymentModal.tsx` was rewritten to accept **all** confirmed `bookings` (`BookingRequest[]`), shows a combined order summary + total, processes every session in a single `Promise.all` pass (one chosen method applies to all), and returns one receipt per paid session. `App.tsx` payment state is now `pendingPaymentBookings: BookingRequest[]`; `handleProceedToPayment` takes the full array (wired from `BookingModal` which now calls `onProceedToPayment(confirmedBookings)` instead of `[0]`); `handlePaymentComplete` maps a `{bookingId, result}[]` back over the bookings. `BookingCard` gained a **"Pay Now"** button (shown only for unpaid non-oncourt sessions) so any unpaid session can be paid later from "My Booking" / the bookings popup. Stale note in BookingModal ("rest can be settled at the court") replaced with "One payment covers all N sessions."
@@ -69,7 +122,7 @@ Auto-updated by Claude at the end of each working session. On a new session: rea
 - Test versions installed differ from the plan's assumptions: vitest **4** (not 3), jsdom **30**, @testing-library/jest-dom **7** (not 6). `vitest.config.ts` is separate from `vite.config.ts` (which is function-form + Tailwind plugin).
 - `BookingRequest.timeSlotId` ↔ `TimeSlot.bookedByBookingId` must be kept in sync — now centralized in the `confirmBookings` / `cancelBooking` / `updateBooking` reducers in `src/bookingLogic.ts` (App.tsx handlers are thin wrappers over them).
 - Seed bookings (`initialBookings`) reference slot ids that do NOT exist in the generated schedule — slot lookups must handle "not found" gracefully.
-- localStorage keys (bump suffix to reset): coaches `v10`, site copy `v4`, services `v4`, time slots `v8`, bookings `v8`, reviews `v1`.
+- localStorage keys (bump suffix to reset): coaches `v11`, site copy `v5`, services `v4`, time slots `v8`, bookings `v8`, reviews `v1`.
 - tsconfig has NO `noUnusedLocals`/`noUnusedParameters` — unused imports don't fail lint, but keep code clean anyway.
 - `SkillQuizModal.tsx` was an orphan (never imported) — **deleted 2026-08-10** as part of dead-code cleanup.
 - Reviews ARE persisted since 2026-08-10 (`pickleball_coach_reviews_v1` in localStorage via `loadStoredReviews`/`saveStoredReviews`). They'll move to a real backend when user submissions land.

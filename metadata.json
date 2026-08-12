@@ -1,6 +1,6 @@
 {
-  "name": "PB Coach Pickleball Coaching",
-  "description": "Landing page for PB Coach pickleball players to view coach availability, book private sessions, and manage coaching schedules.",
+  "name": "DINKLAB + Pickleball Coaching",
+  "description": "Landing page for DINKLAB + pickleball players to view coach availability, book private sessions, and manage coaching schedules.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
