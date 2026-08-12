@@ -18,7 +18,7 @@ export const HeroBanner: React.FC = () => {
         {/* Logo — transparent-background PNG, sits cleanly on the dark bg.
             Heartbeat: single pulse in place (no float) with a violet glow per beat. */}
         <img
-          src="/DINKLAB + Logo 3d No BG.png"
+          src={`${import.meta.env.BASE_URL}DINKLAB + Logo 3d No BG.png`}
           alt="DINKLAB + Logo"
           draggable={false}
           className="w-80 sm:w-96 lg:w-[30rem] h-auto animate-heartbeat pointer-events-none select-none"

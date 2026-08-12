@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo & Branding */}
           <div className="flex items-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img
-              src="/DINKLAB + Text White.png"
+              src={`${import.meta.env.BASE_URL}DINKLAB + Text White.png`}
               alt="DINKLAB +"
               draggable={false}
               className="h-42 md:h-48 w-auto select-none"

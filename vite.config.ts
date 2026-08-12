@@ -5,6 +5,9 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // Relative base → works at any hosting path: GitHub Pages project subpath
+    // (/landing-page/) now and Cloudflare Pages root with the .ph domain later.
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

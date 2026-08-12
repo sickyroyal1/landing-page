@@ -18,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ coachProfile, onOpenBooking }) =
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2">
               <img
-                src="/DINK LAB + Vector.png"
+                src={`${import.meta.env.BASE_URL}DINK LAB + Vector.png`}
                 alt="DINKLAB +"
                 draggable={false}
                 className="h-9 w-auto mix-blend-screen select-none"
