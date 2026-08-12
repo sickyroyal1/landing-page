@@ -93,8 +93,8 @@ export const FindCoachSection: React.FC<FindCoachSectionProps> = ({
           </p>
         </div>
 
-        {/* Cascading dropdowns: Province → City */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+        {/* Cascading dropdowns + name search: Province → City → Search */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
           {/* Province */}
           <div>
             <label className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-2">
@@ -137,52 +137,47 @@ export const FindCoachSection: React.FC<FindCoachSectionProps> = ({
               ))}
             </select>
           </div>
+
+          {/* Search by coach name — third cell in the header row */}
+          <div>
+            <label className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-2">
+              <Search className="w-3.5 h-3.5 text-purple-400" /> Know your coach already?
+            </label>
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-4 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search them here"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-9 py-3.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-400 transition-colors"
+              />
+              {isSearching && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                  className="absolute right-2.5 top-4 text-slate-500 hover:text-white cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            {isSearching && (
+              <p className="text-[11px] text-slate-400 mt-2 font-semibold">
+                {searchResults.length > 0
+                  ? `${searchResults.length} coach${searchResults.length === 1 ? '' : 'es'} found`
+                  : 'No coaches match that name'}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Result area — search column + map always visible; coach list appears
-            on the right when a city is picked or a coach name is searched */}
+        {/* Result area — map always visible; coach list appears on the right
+            when a city is picked or a coach name is searched */}
         <div className="mt-10">
           <div className={`flex gap-6 items-start ${!showCoachList ? 'justify-center' : ''}`}>
 
-            {/* ── "Know your coach?" name search (left column) ─────────────── */}
-            <div className="w-64 shrink-0 rounded-2xl bg-slate-900 border border-slate-800 p-5">
-              <h3 className="text-sm font-black text-white leading-snug">
-                Know your coach already?
-              </h3>
-              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                Search by name across all coaches in {selectedProvince ? selectedProvince.name : 'the province'}.
-              </p>
-
-              <div className="relative mt-4">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3 pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search them here"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-400 transition-colors"
-                />
-                {isSearching && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    aria-label="Clear search"
-                    className="absolute right-2.5 top-2.5 text-slate-500 hover:text-white cursor-pointer transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-
-              {isSearching && (
-                <p className="text-[11px] text-slate-400 mt-3 font-semibold">
-                  {searchResults.length > 0
-                    ? `${searchResults.length} coach${searchResults.length === 1 ? '' : 'es'} found`
-                    : 'No coaches match that name'}
-                </p>
-              )}
-            </div>
-
-            {/* ── Map (middle) ─────────────────────────────────────────────── */}
+            {/* ── Map ──────────────────────────────────────────────────────── */}
             <div
               className={`rounded-2xl bg-slate-900 border border-slate-800 px-6 py-10 flex flex-col items-center transition-all duration-500 ease-in-out ${
                 showCoachList ? 'flex-1 min-w-0' : 'flex-1 max-w-3xl min-w-0'
